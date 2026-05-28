@@ -1,5 +1,5 @@
 #!/bin/bash
-# evil 2.5 - Linux Ultimate Edition
+
 
 lockfile="/tmp/evil.lock"
 if [ -f "$lockfile" ]; then
