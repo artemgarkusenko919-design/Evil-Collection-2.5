@@ -10,20 +10,63 @@ EVIL 2.5 - cross-platform collection of scripts for complete and irreversible de
 ## Platform Capabilities
 
 ### Windows 
-# EVIL 3.0 NewGen 
-
-## What This Script Does
+# EVIL 6.6 NewGen 
 
 | # | Feature | Details |
 |---|---------|---------|
-| 1 | **Full Disk Wipe** | Writes zeros to 100% of every physical disk (HDD/SSD/NVMe). Not just MBR/GPT — entire drive capacity. |
-| 2 | **ESP Partition Destruction** | Mounts and wipes EFI System Partition even without a drive letter. Physically destroys UEFI bootloader. |
-| 3 | **Windows Kernel Deletion** | ntoskrnl.exe, winload.exe, winload.efi, hal.dll — deleted before OS starts (via PendingFileRenameOperations) |
-| 4 | **Critical Driver Disabling** | disk.sys, partmgr.sys, volume.sys, storahci.sys, stornvme.sys, pci.sys, acpi.sys — disabled/removed |
-| 5 | **Registry Destruction** | Offline hive overwrite + file zeroing. SYSTEM, SOFTWARE, SAM, SECURITY — completely destroyed |
-| 6 | **Disk Filling (Parallel)** | 8 simultaneous threads fill all free space with garbage until drive is 100% full |
-| 7 | **WHEA + BSOD** | Triggers Windows Hardware Error Architecture exception + Blue Screen of Death |
-| 8 | **Force Shutdown** | Stop-Computer -Force — system turns off immediately |
+| 1 | **Wi-Fi Passwords Harvest** | Extracts all saved Wi-Fi passwords (русский/english fallback) |
+| 2 | **Router Attack** | Reboot + factory reset + firmware kill (5+ methods) |
+| 3 | **Full Disk Wipe (DoD 7-pass)** | Writes 7 patterns (0x00,0xFF,0x00,0xFF,0x00,0xFF,0xAA) to every sector |
+| 4 | **clean all via diskpart** | Complete drive sanitization (all partitions removed) |
+| 5 | **BitLocker Bypass** | Manage-bde -off on C:/D:/E: drives |
+| 6 | **ESP Partition Destruction** | Mounts and wipes EFI System Partition even without drive letter |
+| 7 | **UEFI Variables Destruction** | BootOrder, Boot0000-0005, BootCurrent, SecureBoot, PK, KEK, db, dbx — all wiped |
+| 8 | **Windows Kernel Deletion** | ntoskrnl.exe, winload.exe, winload.efi, hal.dll — deleted via PendingFileRenameOperations |
+| 9 | **50+ Critical Drivers Disabled** | disk, partmgr, storahci, stornvme, pci, acpi, ntfs, USBSTOR, USBHUB3, TCPIP, NDIS, and more |
+| 10 | **Physical Driver File Deletion** | All *.sys in C:\Windows\System32\drivers — queued for deletion |
+| 11 | **Registry Hive Destruction** | SYSTEM, SOFTWARE, SAM, SECURITY, DEFAULT — overwritten with 10MB of zeros |
+| 12 | **Registry Classes Deletion** | HKLM\SOFTWARE\Classes — removed |
+| 13 | **All Services Disabled** | HKLM\SYSTEM\CurrentControlSet\Services — Start=4 for every service |
+| 14 | **All AppX Packages Removed** | Remove-AppxPackage -AllUsers |
+| 15 | **System Files Queue for Deletion** | *.mui, *.dll, *.exe, Fonts, Media, Themes — all via PendingFileRenameOperations |
+| 16 | **Network Adapters Disabled** | All adapters (except Loopback) — Disable-NetAdapter |
+| 17 | **Wi-Fi Profiles Deleted** | netsh wlan delete profile * |
+| 18 | **Routing Table Flushed** | route -f |
+| 19 | **IP Stack Reset** | netsh int ip reset all |
+| 20 | **Firewall Total Block** | blockinbound,blockoutbound + all rules disabled |
+| 21 | **DNS Client Disabled** | sc config Dnscache start= disabled + sc stop |
+| 22 | **WinRing0 Hardware Kill** | MSR write (CPU power), PCI config kill, EC ports, SATA/AHCI, Thunderbolt, TPM |
+| 23 | **PnP Devices Disabled** | All non-critical devices (ACPI/PCI/Processor excluded) |
+| 24 | **Logical Drives Overwrite** | Raw write 200×100MB to C:/D:/E: |
+| 25 | **Network Spread** | Copies itself to all network drives (DriveType 4) |
+| 26 | **USB Spread** | Copies itself to all USB drives (InterfaceType USB) |
+| 27 | **Self-Deletion** | Set-PendingDelete on script itself |
+| 28 | **Winlogon Kill + Shutdown** | Stop-Process winlogon + Stop-Computer -Force |
+
+---
+
+## Hardware Attack (WinRing0)
+
+| Component | Action |
+|-----------|--------|
+| **CPU** | MSR write (0x1A0, 0x1B0) — disable power management, max load |
+| **PCI Configuration** | Write 0x00000000 to command register for all devices (bus 0-255, dev 0-31, func 0-7) |
+| **SATA/AHCI** | Disable storahci, msahci, pciide + driver deletion |
+| **Embedded Controller** | Write to EC ports: 0x66/0x62, 0x68/0x6C, 0x290/0x291 |
+| **TPM** | tpm.sys deletion + Start=4 |
+| **Thunderbolt** | Thunderbolt, TbtBus, TbtP2p — disabled |
+
+---
+
+## Router Attack Methods
+
+| Method | Target |
+|--------|--------|
+| `/reboot` | Generic routers |
+| `/reset` | Factory reset |
+| `/userRpm/SysRebootRpm.htm` | TP-Link |
+| `/goform/reboot` | D-Link, Huawei |
+| `/rebootinfo.cgi` | Various |
 
 ---
 
@@ -31,22 +74,25 @@ EVIL 2.5 - cross-platform collection of scripts for complete and irreversible de
 
 | Action | Method | Persistence |
 |--------|--------|-------------|
-| Disk wipe | `\\.\PhysicalDriveN` raw write | Permanent |
-| ESP kill | `mountvol Z: /s` + raw write | Permanent |
+| Disk wipe | `\\.\PhysicalDriveN` raw write (DoD 7-pass) | Permanent |
+| ESP kill | `mountvol Z: /s` + raw write + `Add-PartitionAccessPath` fallback | Permanent |
 | Kernel delete | `PendingFileRenameOperations` registry | After reboot |
-| Driver disable | `Start=4` in registry + PnP disable | After reboot |
-| Registry kill | Offline load + zero overwrite | Permanent |
-| Disk filling | Parallel `Start-Job` threads | Until full |
-| BSOD | `NtRaiseHardError` + kill winlogon | Immediate |
+| Driver disable | `Start=4` in registry + PnP disable + `.sys` deletion | After reboot |
+| Registry kill | Zero overwrite (10MB) + `PendingFileRenameOperations` | Permanent |
+| UEFI variables | `Set-FirmwareEnvironmentVariable` (0xFF,0xFF,0xFF,0xFF) | Permanent |
+| Network | Firewall block + adapter disable + DNS kill | Permanent |
 
 ---
 
 ## Irreversible Effects
 
-- **All data on all drives** — permanently lost
+- **All data on all drives** — permanently lost (DoD 7-pass + clean all)
 - **Windows cannot boot** — bootloader + kernel + registry destroyed
-- **Drives may not be detected** — storage drivers disabled
-- **Fresh Windows install still possible** — via USB flash drive
+- **Drives may not be detected** — storage drivers disabled + driver files deleted
+- **UEFI/BIOS** — variables wiped, ESP destroyed
+- **Network** — adapters disabled, firewall blocks all, DNS dead
+- **Wi-Fi** — all profiles deleted
+- **Router** — rebooted/reset (hardware brick on old models)
 
 ---
 
