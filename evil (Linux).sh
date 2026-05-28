@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 lockfile="/tmp/evil.lock"
 if [ -f "$lockfile" ]; then
     exit 0
