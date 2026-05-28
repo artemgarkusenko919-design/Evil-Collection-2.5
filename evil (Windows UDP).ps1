@@ -1,4 +1,4 @@
-# evil 2.6.2 - Windows Ultimate Brick Edition
+# evil 2.6.2 - онле винда
 
 $mutex = New-Object System.Threading.Mutex($false, "Global\EVIL_MUTEX_2026")
 if (-not $mutex.WaitOne(0, $false)) { exit }
