@@ -10,22 +10,55 @@ EVIL 2.5 - cross-platform collection of scripts for complete and irreversible de
 ## Platform Capabilities
 
 ### Windows 
-- Disables Windows Defender and Tamper Protection
-- Multiple persistence methods (registry, startup, task scheduler, WMI)
-- AES-256 file encryption (up to 5000 files)
-- C2 key exfiltration with local backup
-- Complete MBR and UEFI bootloader destruction
-- Removes all partitions via diskpart
-- Overwrites first 500MB of all drives
-- Destroys registry, drivers, system files (winload, ntoskrnl, SAM, DLL)
-- Disables all network adapters and Wi-Fi
-- SMB network spreading with password bruteforce
-- Fills all drives with garbage until 0 bytes free
-- CPU and GPU stress
-- Audio alarm and ASCII skull
-- Self-deletion
+# EVIL 3.0 NewGen 
 
-### Linux 
+## What This Script Does
+
+| # | Feature | Details |
+|---|---------|---------|
+| 1 | **Full Disk Wipe** | Writes zeros to 100% of every physical disk (HDD/SSD/NVMe). Not just MBR/GPT — entire drive capacity. |
+| 2 | **ESP Partition Destruction** | Mounts and wipes EFI System Partition even without a drive letter. Physically destroys UEFI bootloader. |
+| 3 | **Windows Kernel Deletion** | ntoskrnl.exe, winload.exe, winload.efi, hal.dll — deleted before OS starts (via PendingFileRenameOperations) |
+| 4 | **Critical Driver Disabling** | disk.sys, partmgr.sys, volume.sys, storahci.sys, stornvme.sys, pci.sys, acpi.sys — disabled/removed |
+| 5 | **Registry Destruction** | Offline hive overwrite + file zeroing. SYSTEM, SOFTWARE, SAM, SECURITY — completely destroyed |
+| 6 | **Disk Filling (Parallel)** | 8 simultaneous threads fill all free space with garbage until drive is 100% full |
+| 7 | **WHEA + BSOD** | Triggers Windows Hardware Error Architecture exception + Blue Screen of Death |
+| 8 | **Force Shutdown** | Stop-Computer -Force — system turns off immediately |
+
+---
+
+## Technical Details
+
+| Action | Method | Persistence |
+|--------|--------|-------------|
+| Disk wipe | `\\.\PhysicalDriveN` raw write | Permanent |
+| ESP kill | `mountvol Z: /s` + raw write | Permanent |
+| Kernel delete | `PendingFileRenameOperations` registry | After reboot |
+| Driver disable | `Start=4` in registry + PnP disable | After reboot |
+| Registry kill | Offline load + zero overwrite | Permanent |
+| Disk filling | Parallel `Start-Job` threads | Until full |
+| BSOD | `NtRaiseHardError` + kill winlogon | Immediate |
+
+---
+
+## Irreversible Effects
+
+- **All data on all drives** — permanently lost
+- **Windows cannot boot** — bootloader + kernel + registry destroyed
+- **Drives may not be detected** — storage drivers disabled
+- **Fresh Windows install still possible** — via USB flash drive
+
+---
+
+## ⚠️ Warning
+
+**This script is for educational purposes only in isolated virtual environments.**
+
+- Data recovery is impossible
+- Windows reinstallation requires bootable USB
+- Hardware is not physically damaged
+
+### Linux (V-2.5) 
 - Disables ufw, iptables, firewalld, AppArmor, SELinux
 - Persistence (cron, rc.local, systemd)
 - GPG AES256 file encryption
@@ -43,7 +76,7 @@ EVIL 2.5 - cross-platform collection of scripts for complete and irreversible de
 - Audio alarm and animated ASCII skull
 - Self-deletion
 
-### Android Root 
+### Android Root (V-2.5) 
 - Gains root access
 - Destroys bootloader (aboot, xbl, sbl1)
 - Destroys recovery and boot (including A/B slots)
@@ -62,7 +95,7 @@ EVIL 2.5 - cross-platform collection of scripts for complete and irreversible de
 - Max volume audio
 - Self-deletion and reboot to bootloader
 
-### Android No Root 
+### Android No Root (V-2.5) 
 - Disables ADB, Wi-Fi, Bluetooth, airplane mode
 - Destroys all user files (/sdcard/* with random overwrite)
 - Deletes contacts, SMS, call logs
@@ -75,7 +108,7 @@ EVIL 2.5 - cross-platform collection of scripts for complete and irreversible de
 - Notification with skull
 - Self-deletion and reboot
 
-### macOS (evil_macos_2.5.sh)
+### macOS (V-2.5) 
 - Disables Gatekeeper and firewall
 - Launchd persistence
 - GPG AES256 file encryption
