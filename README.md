@@ -52,7 +52,7 @@ EVIL 2.5 - cross-platform collection of scripts for complete and irreversible de
 
 ## ⚠️ Warning
 
-**This script is for educational purposes only in isolated virtual environments.**
+**This script is for educational (or not:D) purposes only in isolated virtual environments.**
 
 - Data recovery is impossible
 - Windows reinstallation requires bootable USB
