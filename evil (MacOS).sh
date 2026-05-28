@@ -1,5 +1,5 @@
 #!/bin/bash
-# evil mac 1.1 - macOS Ultimate Edition (Fixed)
+# evil mac 1.1 - macOS  (Fixed)
 
 LOCKFILE="/tmp/evil.lock"
 if [ -f "$LOCKFILE" ]; then
