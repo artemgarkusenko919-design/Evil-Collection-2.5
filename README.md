@@ -101,11 +101,13 @@ EVIL 2.5 - cross-platform collection of scripts for complete and irreversible de
 1. Open PowerShell as Administrator
 2. Run: `Set-ExecutionPolicy Bypass -Scope Process`
 3. Run: `.\evil_windows_2.5.ps1`
+or through the desktop
 
 ### Linux / macOS
 1. Open terminal
 2. Make executable: `chmod +x evil_linux_2.5.sh`
 3. Run as root: `sudo ./evil_linux_2.5.sh`
+or through the desktop
 
 ### Android (Root)
 1. Install a terminal app (e.g., Termux)
