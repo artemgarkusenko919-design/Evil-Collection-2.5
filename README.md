@@ -190,7 +190,7 @@ EVIL 7 NewGen TOTAL is the final, complete, no-compromise version of the EVIL se
 ### Windows
 1. Open PowerShell as Administrator
 2. Run: `Set-ExecutionPolicy Bypass -Scope Process`
-3. Run: `.\evil_windows_2.5.ps1`
+3. Run: `.\evil (Windows) NewGen 7.ps1`
 or through the desktop
 
 ### Linux / macOS
