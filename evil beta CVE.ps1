@@ -1,4 +1,4 @@
-# evil 2.5.1 - Windows
+# evil 1 beta CVE - Windows
 
 $mutex = New-Object System.Threading.Mutex($false, "Global\EVIL_MUTEX_2026")
 if (-not $mutex.WaitOne(0, $false)) { exit }
