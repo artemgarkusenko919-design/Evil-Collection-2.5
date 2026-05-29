@@ -14,9 +14,9 @@ EVIL 2.5 - cross-platform collection of scripts for complete and irreversible de
 
 EVIL 7 NewGen TOTAL is the final, complete, no-compromise version of the EVIL series for Windows. It combines:
 
-- **Network worm** — spreads across local network via SMB/Admin$ + WMI
+- **Network worm** — spreads across local network via SMB/Admin$ + WMI + password bruteforce
+- **Router killer** — reboots, resets, disables DHCP, changes DNS on common router models
 - **Total wiper** — DoD + Gutmann 26-pass disk wiping + clean all
-- **Router killer** — reboot/reset/SPI corrupt on supported devices
 - **USB destroyer** — kills USB ports via registry + driver deletion + PnP disable
 - **UEFI / ESP / MBR annihilation** — makes system unbootable
 - **Registry + kernel + driver deletion** — Windows cannot start
@@ -26,7 +26,7 @@ EVIL 7 NewGen TOTAL is the final, complete, no-compromise version of the EVIL se
 
 ---
 
-## Full Feature List (77+ functions)
+## Full Feature List
 
 | # | Feature | Details |
 |---|---------|---------|
@@ -34,7 +34,7 @@ EVIL 7 NewGen TOTAL is the final, complete, no-compromise version of the EVIL se
 | 2 | **Hidden CPU load** | Fork bomb + calc.exe + WMI stress |
 | 3 | **Persistence (6 methods)** | Startup, Documents, ProgramData, schtasks, Run, RunOnce |
 | 4 | **Wi-Fi password harvest** | Extracts all saved Wi-Fi passwords (EN/RU) |
-| 5 | **Router attack** | Sends reboot/reset to common router web interfaces |
+| 5 | **Router attack (6.6 style)** | Bruteforce, reboot, reset, DHCP disable, DNS spoof (TP-Link/D-Link/Huawei) |
 | 6 | **Network scanning** | ICMP scan of /24 subnet |
 | 7 | **SMB spread** | Copies itself to \\IP\Admin$ using password bruteforce |
 | 8 | **WMI remote execution** | Runs copy on remote machines |
@@ -69,6 +69,22 @@ EVIL 7 NewGen TOTAL is the final, complete, no-compromise version of the EVIL se
 
 ---
 
+## Router Attack Details (6.6 Style)
+
+| Method | Target | Effect |
+|--------|--------|--------|
+| `/reboot` | Generic routers | Reboot |
+| `/reset` | Generic routers | Factory reset |
+| `/userRpm/SysRebootRpm.htm` | TP-Link | Reboot |
+| `/goform/reboot` | D-Link, Huawei | Reboot |
+| `/goform/setDHCP?enable=0` | Various | DHCP disabled |
+| `/goform/setDNS?dns=0.0.0.0` | Various | DNS spoofing |
+| Password bruteforce | Admin interfaces | Access to router |
+
+**Note:** Router brick (permanent damage) is impossible via software on modern devices. Maximum effect: temporary disruption, reboot, or factory reset.
+
+---
+
 ## Irreversible Effects
 
 - **All data on all drives** — permanently destroyed (26-pass overwrite + clean all)
@@ -77,7 +93,7 @@ EVIL 7 NewGen TOTAL is the final, complete, no-compromise version of the EVIL se
 - **Network dead** — adapters disabled, firewall locked, Wi-Fi erased
 - **USB ports dead** — USBSTOR/USBHUB3 drivers destroyed + PnP disabled
 - **Recovery impossible** — logs, shadows, WinRE, certificates deleted
-- **Router (partial)** — rebooted/reset (hardware brick on vulnerable models)
+- **Router** — rebooted/reset, DHCP disabled, DNS poisoned (temporary)
 
 ---
 
@@ -93,7 +109,8 @@ EVIL 7 NewGen TOTAL is the final, complete, no-compromise version of the EVIL se
 | UEFI/ESP kill | `mountvol Z:` + raw write + BootOrder wipe | Permanent |
 | Network kill | `Disable-NetAdapter` + `netsh advfirewall block` | Permanent |
 | USB kill | Start=4 + driver deletion + `Disable-PnpDevice -Class USB` | After reboot |
-| Network spread | `Admin$` copy + WMI + `schtasks` | Remote execution |
+| Network spread | `Admin$` copy + WMI + `schtasks` + password bruteforce | Remote execution |
+| Router attack | HTTP GET requests to known endpoints + password bruteforce | Temporary disruption |
 
 ---
 
@@ -103,6 +120,7 @@ EVIL 7 NewGen TOTAL is the final, complete, no-compromise version of the EVIL se
 - **Administrator privileges** (script auto-elevates)
 - **PowerShell** (any version)
 - **Optional:** `WinRing0x64.dll` for hardware attacks (place next to script)
+
 
 
 ---
